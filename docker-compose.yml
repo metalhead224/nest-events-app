@@ -1,22 +1,27 @@
 version: "3.8"
 
 services:
-  mysql:
-    image: mysql:8.0.23
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: suman
-    ports:
-      - 3306:3306
-
-  # postgres:
-  #   image: postgres:13.1
+  # mysql:
+  #   image: mysql
   #   restart: always
   #   environment:
-  #     POSTGRES_PASSWORD: suman
+  #     MYSQL_ROOT_PASSWORD: suman
   #   ports:
-  #     - 5432:5432
+  #     - "3306:3306"
+  #   volumes:
+  #     - .dbdata:/var/lib/mysql/eventsDB
+
+  postgres:
+    image: postgres:13.1
+    restart: always
+    environment:
+      POSTGRES_USER: suman
+      POSTGRES_PASSWORD: suman
+      POSTGRES_DB: nest-events
+    ports:
+      - "5432:5432"
+    volumes:
+      - .dbdata:/var/lib/postgres/eventsDB
 
   adminer:
     image: adminer
