@@ -11,6 +11,8 @@ import {
   Patch,
   Post,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Like, MoreThan, Repository } from 'typeorm';
 import { Event } from './event.entity';
@@ -34,12 +36,17 @@ export class EventsController {
   ) {}
 
   @Get()
+  @UsePipes(new ValidationPipe({ transform: true }))
   async findAll(@Query() filter: ListEvents) {
-    this.logger.log(`Hit all findAll route`);
-    const events = await this.eventsService.getEventsWithAttendeeCountFiltered(
-      filter,
-    );
-    this.logger.debug(`found ${events.length} events`);
+    const events =
+      await this.eventsService.getEventsWithAttendeeCountFilteredPaginated(
+        filter,
+        {
+          total: true,
+          currentPage: filter.page,
+          limit: 10,
+        },
+      );
     return events;
   }
 
@@ -108,12 +115,10 @@ export class EventsController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id) {
-    const event = await this.repository.findOneBy({ id });
+    const result = await this.eventsService.deleteEvent(id);
 
-    if (!event) {
+    if (result?.affected !== 1) {
       throw new NotFoundException();
     }
-
-    await this.repository.remove(event);
   }
 }
